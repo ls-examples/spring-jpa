@@ -13,6 +13,11 @@ book-update --id 10 --book "Руслан и людмила|2008|Хорошая �
 book-delete 1
 ```
 
+## View book
+```
+book-delete 10
+```
+
 ## List book
 ```
 book-list

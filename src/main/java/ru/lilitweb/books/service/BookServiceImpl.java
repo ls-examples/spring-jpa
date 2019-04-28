@@ -1,11 +1,15 @@
 package ru.lilitweb.books.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.integration.channel.DirectChannel;
+import org.springframework.integration.channel.QueueChannel;
+import org.springframework.integration.dsl.MessageChannels;
+import org.springframework.integration.support.MessageBuilder;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHeaders;
 import org.springframework.stereotype.Service;
 import ru.lilitweb.books.domain.Book;
-import ru.lilitweb.books.domain.Genre;
-import ru.lilitweb.books.domain.User;
-import ru.lilitweb.books.repostory.BookRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,45 +17,73 @@ import java.util.Optional;
 @Service
 public class BookServiceImpl implements BookService {
 
-    private BookRepository bookRepository;
+    @Autowired
+    @Qualifier("savingBookChannel")
+    private DirectChannel savingBookChannel;
 
     @Autowired
-    public BookServiceImpl(BookRepository bookDao) {
-        this.bookRepository = bookDao;
-    }
+    @Qualifier("getAllBookChannel")
+    private DirectChannel getAllBookChannel;
+
+    @Autowired
+    @Qualifier("getBookChannel")
+    private DirectChannel getBookChannel;
+
+    @Autowired
+    @Qualifier("deleteBookChannel")
+    private DirectChannel deleteBookChannel;
 
     @Override
     public void add(Book book) {
-        bookRepository.save(book);
+        QueueChannel responseChannel = MessageChannels.queue(1).get();
+        Message<Book> message =
+                MessageBuilder.withPayload(book)
+                        .setHeader(MessageHeaders.REPLY_CHANNEL, responseChannel)
+                        .build();
+        savingBookChannel.send(message);
+        responseChannel.receive();
     }
 
     @Override
     public void update(Book book) {
-        bookRepository.save(book);
+        QueueChannel responseChannel = MessageChannels.queue(1).get();
+        Message<Book> message =
+                MessageBuilder.withPayload(book)
+                        .setHeader(MessageHeaders.REPLY_CHANNEL, responseChannel)
+                        .build();
+        savingBookChannel.send(message);
+        responseChannel.receive();
     }
 
     @Override
-    public Book getById(long id) {
-        return bookRepository.findById(id).orElse(null);
-    }
-
-    @Override
-    public List<Book> getAllByAuthor(User author) {
-        return bookRepository.findByAuthor(author);
-    }
-
-    @Override
-    public List<Book> getAllByGenres(List<Genre> genres) {
-        return bookRepository.findByGenresIn(genres);
+    public Optional<Book> getById(long id) {
+        QueueChannel responseChannel = MessageChannels.queue(1).get();
+        Message<Long> message =
+                MessageBuilder.withPayload(id)
+                        .setHeader(MessageHeaders.REPLY_CHANNEL, responseChannel)
+                        .build();
+        getBookChannel.send(message);
+        Message reply = responseChannel.receive();
+        return (Optional<Book>) reply.getPayload();
     }
 
     @Override
     public List<Book> getAll() {
-        return bookRepository.findAll();
+        QueueChannel responseChannel = MessageChannels.queue(1).get();
+        Message message =
+                MessageBuilder.withPayload("")
+                        .setHeader(MessageHeaders.REPLY_CHANNEL, responseChannel)
+                        .build();
+        getAllBookChannel.send(message);
+        Message reply = responseChannel.receive();
+        return (List<Book>) reply.getPayload();
     }
 
     @Override
     public void delete(Book book) {
-        bookRepository.delete(book);
+        Message<Book> message =
+                MessageBuilder.withPayload(book)
+                        .build();
+        deleteBookChannel.send(message);
     }
 }
