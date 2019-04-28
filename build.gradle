@@ -26,8 +26,9 @@ repositories {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
     compile 'org.projectlombok:lombok'
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-jdbc'
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-integration'
+    compile group: 'org.springframework', name: 'spring-messaging'
     compile group: 'com.h2database', name: 'h2', version: '1.4.197'
     compile group: 'org.liquibase', name: 'liquibase-core'
     compile group: 'mysql', name: 'mysql-connector-java'

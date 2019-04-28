@@ -11,6 +11,7 @@ import ru.lilitweb.books.service.BookService;
 import ru.lilitweb.books.service.LocalisationService;
 
 import java.util.LinkedHashMap;
+import java.util.Optional;
 
 @ShellComponent
 @ShellCommandGroup("Book")
@@ -38,7 +39,17 @@ public class BookCrud {
 
     @ShellMethod("Delete book")
     public void bookDelete(@ShellOption int id) {
-        bookService.delete(bookService.getById(id));
+        bookService.getById(id).ifPresent(b -> bookService.delete(b));
+    }
+
+    @ShellMethod("View book")
+    public String bookView(@ShellOption int id) {
+        Optional<Book> book = bookService.getById(id);
+        if (book.isPresent()) {
+            return book.get().getTitle();
+        }
+
+        return "not found";
     }
 
     @ShellMethod("List books")

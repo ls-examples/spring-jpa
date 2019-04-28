@@ -60,38 +60,11 @@ class BookServiceImplTest {
                 new User("some book author"));
         book.setId(1);
         when(repository.findById(1L)).thenReturn(Optional.of(book));
-        Book returnedBook = bookService.getById(1);
+        Optional<Book> returnedBook = bookService.getById(1);
 
-        assertEquals(returnedBook, book);
+        assertEquals(returnedBook.get(), book);
     }
 
-    @Test
-    void getAllByAuthor() {
-        User author = new User("some book author");
-        Book book = new Book(
-                "Руслан и Людмила",
-                2019,
-                "Описание",
-                author);
-        when(repository.findByAuthor(author)).thenReturn(Arrays.asList(book));
-        List<Book> books = bookService.getAllByAuthor(author);
-        assertEquals(book, books.get(0));
-    }
-
-    @Test
-    void getAllByGenres() {
-        List<Genre> genres = Arrays.asList(new Genre("Поэзия"), new Genre("Ужастик"));
-        User author = new User("some book author");
-        Book book = new Book(
-                "Руслан и Людмила",
-                2019,
-                "Описание",
-                author);
-        book.setGenres(genres);
-        when(repository.findByGenresIn(genres)).thenReturn(Arrays.asList(book));
-        List<Book> books = bookService.getAllByGenres(genres);
-        assertEquals(book, books.get(0));
-    }
 
     @Test
     void getAll() {
